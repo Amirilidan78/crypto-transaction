@@ -46,7 +46,60 @@ type AddressToken struct {
 	Balance   string `json:"balance"`
 }
 
-// ========================================== //
+type BlockResponse struct {
+	Page              int64             `json:"page"`
+	TotalPages        int64             `json:"totalPages"`
+	ItemsOnPage       int64             `json:"itemsOnPage"`
+	Hash              string            `json:"hash"`
+	PreviousBlockHash string            `json:"previousBlockHash"`
+	NextBlockHash     string            `json:"nextBlockHash"`
+	Height            int64             `json:"height"`
+	Confirmations     int64             `json:"confirmations"`
+	Size              int64             `json:"size"`
+	Time              int64             `json:"time"`
+	Version           int64             `json:"version"`
+	MerkleRoot        string            `json:"merkleRoot"`
+	Nonce             string            `json:"nonce"`
+	Bits              string            `json:"bits"`
+	Difficulty        string            `json:"difficulty"`
+	TxCount           int64             `json:"txCount"`
+	Txs               []BlockResponseTx `json:"txs"`
+}
+
+type BlockResponseTx struct {
+	TxId             string                         `json:"txid"`
+	VIn              []BlockResponseTxVIn           `json:"vin"`
+	VOut             []BlockResponseTxVOut          `json:"vout"`
+	BlockHash        string                         `json:"blockHash"`
+	BlockHeight      int64                          `json:"blockHeight"`
+	Confirmations    int64                          `json:"confirmations"`
+	BlockTime        int64                          `json:"blockTime"`
+	Value            string                         `json:"value"`
+	Fees             string                         `json:"fees"`
+	TokenTransfers   []*TokenTransfers              `json:"tokenTransfers"`
+	EthereumSpecific *BlockResponseEthereumSpecific `json:"ethereumSpecific"`
+}
+
+type BlockResponseEthereumSpecific struct {
+	Status   int    `json:"status"`
+	Nonce    int64  `json:"nonce"`
+	GasLimit int64  `json:"gasLimit"`
+	GasUsed  int64  `json:"gasUsed"`
+	GasPrice string `json:"gasPrice"`
+}
+
+type BlockResponseTxVIn struct {
+	N         int64    `json:"n"`
+	Addresses []string `json:"addresses"`
+	IsAddress bool     `json:"isAddress"`
+}
+
+type BlockResponseTxVOut struct {
+	Value     string   `json:"value"`
+	N         int64    `json:"n"`
+	Addresses []string `json:"addresses"`
+	IsAddress bool     `json:"isAddress"`
+}
 
 type Utxo struct {
 	Txid          string `json:"txid"`

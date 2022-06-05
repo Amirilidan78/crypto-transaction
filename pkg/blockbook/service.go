@@ -10,6 +10,7 @@ type HttpBlockBook interface {
 	getHost(coin string) string
 	GetStatus(coin string) (StatusResponse, error)
 	GetAddress(coin string, address string) (AddressResponse, error)
+	GetBlock(coin string, hash string) (BlockResponse, error)
 	GetTransaction(coin string, txId string) (TransactionResponse, error)
 	GetAddressUTXO(coin string, address string) ([]Utxo, error)
 	BroadcastTransaction(coin string, hex string) (BroadcastTransactionResponse, error)
@@ -62,6 +63,21 @@ func (b *httpBlockBook) GetAddress(coin string, address string) (AddressResponse
 	res := AddressResponse{}
 
 	path := AddressPath + address
+
+	err := b.get(coin, path, &res)
+
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+func (b *httpBlockBook) GetBlock(coin string, hash string) (BlockResponse, error) {
+
+	res := BlockResponse{}
+
+	path := BlockPath + hash
 
 	err := b.get(coin, path, &res)
 

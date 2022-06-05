@@ -9,6 +9,7 @@ server :
 
 
 coins :
+
   btc :
     fee : 10
     hashType : 0x01
@@ -16,9 +17,18 @@ coins :
     sequenceUnitMax : 4294967294
     subAmount : 8
 
-
+  eth :
+    fee : 10 # not using this for now
+    hashType : 0x01 # not using this for eth
+    minUTXOConfirmation : 1 # not using this for eth
+    sequenceUnitMax : 4294967294
+    subAmount : 18
 
 block-book :
+
   btc :
     node : https://btc1.trezor.io
+
+  eth :
+    node : https://eth1.trezor.io
 

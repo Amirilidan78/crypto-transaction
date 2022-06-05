@@ -12,7 +12,7 @@ simple crypto transaction repository for creating and submitting crypto transact
 
 ### Supported blockchains 
 - BTC -> implemented 
-- ETH -> working on it ...
+- ETH -> implemented
 - TRX -> working on it ...
 
 

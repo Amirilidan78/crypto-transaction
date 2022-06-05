@@ -6,8 +6,8 @@ import (
 	"crypto-transaction/pkg/twallet"
 	cryptoPb "crypto-transaction/pkg/twallet/proto"
 	"crypto-transaction/services/transaction/coin"
+	"encoding/hex"
 	"errors"
-	"fmt"
 	"github.com/golang/protobuf/proto"
 	"math"
 	"math/big"
@@ -15,6 +15,7 @@ import (
 )
 
 const CoinString = "ETH"
+const ChainId = "01"
 const GasLimit = 21000
 
 type Eth interface {
@@ -32,10 +33,28 @@ type eth struct {
 
 func (e *eth) CreateTransaction(amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
 
-	fee := strconv.FormatInt(coin.GetCoinFee(e.c, CoinString), 10)
+	/// TODO : fee config
+
+	// fee := strconv.FormatInt(coin.GetCoinFee(e.c, CoinString), 10)
 
 	// getting gas price
-	_, _, gasPrice, gasLimit, err := e.GetRawGasPriceAndLimit(CoinString, fee)
+	_, _, gasPrice, gasLimit, errGasPrice := e.getRawGasPriceAndLimit()
+
+	hexedGasPrice, errHexGasPrice := coin.StringToHex(strconv.FormatInt(gasPrice, 64))
+
+	hexedGasLimit, errHexGasLimit := coin.StringToHex(strconv.FormatInt(gasLimit, 64))
+
+	if errGasPrice != nil {
+		return nil, errGasPrice
+	}
+
+	if errHexGasPrice != nil {
+		return nil, errHexGasPrice
+	}
+
+	if errHexGasLimit != nil {
+		return nil, errHexGasLimit
+	}
 
 	// converting private key to byte
 	hexedPrivateKey, errPrivateKey := coin.StringToHex(addressPrivateKey)
@@ -84,10 +103,23 @@ func (e *eth) CreateTransaction(amount string, fromAddress string, toAddress str
 
 	ethTransaction.TransactionOneof = ethTransactionTransfer_
 
-	fmt.Println(hexedPrivateKey)
-	fmt.Println(hexedAmount)
-	fmt.Println(hexedNonce)
-	panic("1")
+	hexedChainId, errHexChainId := coin.StringToHex(ChainId)
+
+	if errHexChainId != nil {
+		return nil, errHexChainId
+	}
+
+	si := &cryptoPb.EthSigningInput{
+		ChainId:     hexedChainId,
+		Nonce:       hexedNonce,
+		GasPrice:    hexedGasPrice,
+		GasLimit:    hexedGasLimit,
+		ToAddress:   toAddress,
+		PrivateKey:  hexedPrivateKey,
+		Transaction: ethTransaction,
+	}
+
+	return si, nil
 }
 
 func (e *eth) SignTransaction(pb proto.Message) ([]byte, error) {
@@ -95,7 +127,16 @@ func (e *eth) SignTransaction(pb proto.Message) ([]byte, error) {
 }
 
 func (e *eth) GetRawTransaction(res []byte) (string, error) {
-	panic("1")
+
+	so := &cryptoPb.EthSigningOutput{}
+
+	err := proto.Unmarshal(res, so)
+
+	if err != nil {
+		return "", err
+	}
+
+	return string("0x" + hex.EncodeToString(so.GetEncoded())), err
 }
 
 func (e *eth) BroadCastTransaction(hex string) (string, error) {
@@ -172,3 +213,55 @@ func (e *eth) getGasPrice(address string) (string, error) {
 }
 
 // ================================ should be out of this module ================================ //
+
+func (e *eth) getRawGasPriceAndLimit() (int64, int64, int64, int64, error) {
+
+	minGasPrice, maxGasPrice, avgGasPrice, err := e.estimateGasPriceFromLastBlock()
+
+	if err != nil {
+		return 0, 0, 0, 0, err
+	}
+
+	return minGasPrice, maxGasPrice, avgGasPrice, int64(GasLimit), nil
+}
+
+func (e *eth) estimateGasPriceFromLastBlock() (int64, int64, int64, error) {
+
+	resp, errStatus := e.bb.GetStatus(CoinString)
+
+	if errStatus != nil {
+		return 0, 0, 0, errStatus
+	}
+
+	bestBlockHash := resp.Backend.BestBlockHash
+
+	lastBlock, err := e.bb.GetBlock(CoinString, bestBlockHash)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	minGasPrice := int64(0)
+	maxGasPrice := int64(0)
+	sumGasPrice := int64(0)
+
+	for _, singleTx := range lastBlock.Txs {
+		txGasPrice, err := strconv.ParseInt(singleTx.EthereumSpecific.GasPrice, 10, 64)
+		if err != nil {
+			return 0, 0, 0, err
+		}
+
+		sumGasPrice = sumGasPrice + txGasPrice
+
+		if minGasPrice == 0 || txGasPrice < minGasPrice {
+			minGasPrice = txGasPrice
+		}
+
+		if maxGasPrice == 0 || txGasPrice > maxGasPrice {
+			maxGasPrice = txGasPrice
+		}
+	}
+
+	avgGasPrice := sumGasPrice / lastBlock.TxCount
+
+	return minGasPrice, maxGasPrice, avgGasPrice, nil
+}

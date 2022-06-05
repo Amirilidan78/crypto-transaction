@@ -1,0 +1,22 @@
+version: '3.9'
+
+services:
+
+  api:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: api-crypto-transaction-container
+    restart: always
+    volumes:
+      - ./:/var/www/html/crypto-transaction
+    ports:
+      - "50011:50011"
+    command: >
+      bash -c "go build -o test ./app/test.go && ./test"
+    dns:
+      - 8.8.8.8
+
+volumes:
+  db:
+    driver : local

@@ -14,3 +14,8 @@ simple crypto transaction repository for creating and submitting crypto transact
 - BTC -> implemented 
 - ETH -> working on it ...
 - TRX -> working on it ...
+
+
+used trezor blockbook public nodes for submiting transactions ,getting utxos , getting address nonce and getting block details .
+BTC : btc1.trezor.io
+ETH : eth1.trezor.io

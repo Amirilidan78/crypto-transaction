@@ -23,7 +23,7 @@ type httpBlockBook struct {
 
 func (b *httpBlockBook) getHost(coin string) string {
 
-	url := b.c.GetString("block-book." + coin + ".node")
+	url := b.c.GetString("coins" + coin + ".node")
 
 	if url == "" {
 		panic("error in getting block book node")

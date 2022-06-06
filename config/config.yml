@@ -11,6 +11,7 @@ server :
 coins :
 
   btc :
+    node : https://btc1.trezor.io
     fee : 10
     hashType : 0x01
     minUTXOConfirmation : 1
@@ -18,17 +19,14 @@ coins :
     subAmount : 8
 
   eth :
-    fee : 10 # not using this for now
-    hashType : 0x01 # not using this for eth
-    minUTXOConfirmation : 1 # not using this for eth
+    node : https://eth1.trezor.io
+    fee : 10
     sequenceUnitMax : 4294967294
     subAmount : 18
 
-block-book :
+  trx :
+    node : https://api.shasta.trongrid.io
+    subAmount : 6
+    fee : 1000000
 
-  btc :
-    node : https://btc1.trezor.io
-
-  eth :
-    node : https://eth1.trezor.io
 

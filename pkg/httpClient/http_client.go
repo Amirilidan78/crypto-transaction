@@ -14,6 +14,7 @@ const UserAgent = "InstantWallet"
 
 type HttpClient interface {
 	SimpleGet(url string, res interface{}) error
+	SimplePost(url string, body interface{}, res interface{}) error
 	HttpGet(url string, headers map[string]string) ([]byte, http.Header, int, error)
 	HttpPost(url string, body interface{}, headers map[string]string) ([]byte, http.Header, int, error)
 }
@@ -29,6 +30,32 @@ func (httpClient *httpClient) SimpleGet(url string, res interface{}) error {
 	}
 
 	httpResp, _, status, err := httpClient.HttpGet(url, requestHeaders)
+
+	if err != nil {
+		return err
+	}
+
+	if status != 200 {
+		return errors.New("status code :" + strconv.Itoa(status) + "-" + string(httpResp))
+	}
+
+	err = json.Unmarshal(httpResp, res)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (httpClient *httpClient) SimplePost(url string, body interface{}, res interface{}) error {
+
+	requestHeaders := map[string]string{
+		"User-Agent": UserAgent,
+		"Accept":     "Application/json",
+	}
+
+	httpResp, _, status, err := httpClient.HttpPost(url, body, requestHeaders)
 
 	if err != nil {
 		return err

@@ -9,18 +9,16 @@ simple crypto transaction repository for creating and submitting crypto transact
 - `docker-compose up -d `
 - `docker exec -it api-crypto-transaction-container go run ./app/test.go`
 
-
 ### Supported blockchains 
 - BTC 
 - ETH 
 - TRX 
 
-
 I am using trezor public nodes for btc and eth check `/config/config.yml` `coins.btc.node`
 
 and using shasta public api for trx `/config/config.yml` `coins.trx.node`
 
-
 ### TODOS
+- implement http server for route `/tx/new` 
 - add support for `ETH` and `TRX` tokens 
-- add `BCH` &`LTC` &`DOGE` &`ZEC` &`DASH` &`ETC`blockchains 
+- add `BCH` `LTC` `DOGE` `ZEC` `DASH` `ETC`blockchains 

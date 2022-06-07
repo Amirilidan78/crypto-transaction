@@ -72,6 +72,6 @@ txId, err := cryptoService.CreateTransaction("ETHEREUM" ,"USDT" , "10", "0x7fca0
 
 this project is for learning purpose only
 
-this project is using trezor public nodes for btc and eth, check `/config/config.yml` `coins.btc.node`
+this project is using trezor public nodes and shasta public node 
 
-and using shasta public api for trx, check `/config/config.yml` `coins.trx.node`
+`/config/config.yml` `coins.***.node`

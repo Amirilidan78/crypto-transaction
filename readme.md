@@ -15,12 +15,14 @@ Simple crypto transaction repository for creating and submitting crypto transact
 - BTC
 - ETH
 - TRX
+- LTC
 
 
 ### Supported coins
 - BTC
 - ETH
 - TRX
+- LTC
 - BNB (ERC20)
 - USDT (ERC20)
 - USDC (ERC20)

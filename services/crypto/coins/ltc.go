@@ -12,33 +12,33 @@ import (
 	"strconv"
 )
 
-type Btc interface {
+type Ltc interface {
 	CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error)
 }
 
-type btc struct {
+type ltc struct {
 	c  config.Config
 	tw twallet.TWallet
 	bb blockbook.HttpBlockBook
 }
 
-func (b *btc) CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
+func (l *ltc) CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
 
-	byteFee := common.GetCoinFee(b.c, coin)
+	byteFee := common.GetCoinFee(l.c, coin)
 
-	satoshiAmount, errAmount := b.getAmountInSatoshi(coin, amount)
+	satoshiAmount, errAmount := l.getAmountInLitoshi(coin, amount)
 
 	if errAmount != nil {
 		return nil, errAmount
 	}
 
-	hexedPrivateKey, errPrivateKey := b.convertPrivateKeyToHexStringArray(addressPrivateKey)
+	hexedPrivateKey, errPrivateKey := l.convertPrivateKeyToHexStringArray(addressPrivateKey)
 
 	if errPrivateKey != nil {
 		return nil, errPrivateKey
 	}
 
-	utxos, totalUTXOsAmount, utxoErr := b.getUnspentTransactions(coin, fromAddress)
+	utxos, totalUTXOsAmount, utxoErr := l.getUnspentTransactions(coin, fromAddress)
 
 	if utxoErr != nil {
 		return nil, utxoErr
@@ -49,7 +49,7 @@ func (b *btc) CreateTransaction(coin string, amount string, fromAddress string, 
 	}
 
 	si := &cryptoPb.BtcSigningInput{
-		HashType:      common.GetCoinHashType(b.c, coin),
+		HashType:      common.GetCoinHashType(l.c, coin),
 		Amount:        satoshiAmount,
 		ByteFee:       byteFee,
 		ToAddress:     toAddress,
@@ -64,7 +64,7 @@ func (b *btc) CreateTransaction(coin string, amount string, fromAddress string, 
 	return si, nil
 }
 
-func (b *btc) getAmountInSatoshi(coin string, amount string) (int64, error) {
+func (l *ltc) getAmountInLitoshi(coin string, amount string) (int64, error) {
 
 	btcAmount, err := strconv.ParseFloat(amount, 64)
 
@@ -72,12 +72,12 @@ func (b *btc) getAmountInSatoshi(coin string, amount string) (int64, error) {
 		return 0, err
 	}
 
-	satoshiAmount := btcAmount * math.Pow10(int(common.GetCoinSubAmount(b.c, coin)))
+	satoshiAmount := btcAmount * math.Pow10(int(common.GetCoinSubAmount(l.c, coin)))
 
 	return int64(satoshiAmount), nil
 }
 
-func (b *btc) convertPrivateKeyToHexStringArray(privateKey string) ([][]byte, error) {
+func (l *ltc) convertPrivateKeyToHexStringArray(privateKey string) ([][]byte, error) {
 
 	var hxPrivateKeysArr [][]byte
 
@@ -97,19 +97,19 @@ func (b *btc) convertPrivateKeyToHexStringArray(privateKey string) ([][]byte, er
 	return hxPrivateKeysArr, nil
 }
 
-func (b *btc) getUnspentTransactions(coin string, address string) ([]*cryptoPb.BtcUnspentTransaction, int64, error) {
+func (l *ltc) getUnspentTransactions(coin string, address string) ([]*cryptoPb.BtcUnspentTransaction, int64, error) {
 
 	var result []*cryptoPb.BtcUnspentTransaction
 	var totalAmount int64
 
-	utxos, err := b.bb.GetAddressUTXO(coin, address)
+	utxos, err := l.bb.GetAddressUTXO(coin, address)
 
 	if err != nil {
 		return result, totalAmount, err
 	}
 
 	for _, utxo := range utxos {
-		if utxo.Confirmations >= common.GetCoinUTXOMinConfirmation(b.c, coin) {
+		if utxo.Confirmations >= common.GetCoinUTXOMinConfirmation(l.c, coin) {
 
 			utxId := utxo.Txid
 			utxIdHex, err := common.StringToHex(utxId)
@@ -121,7 +121,7 @@ func (b *btc) getUnspentTransactions(coin string, address string) ([]*cryptoPb.B
 			utxoOutPoit := cryptoPb.BtcOutPoint{
 				Hash:     utxIdReversed,
 				Index:    utxo.Vout,
-				Sequence: common.GetCoinSequenceUnitMax(b.c, coin),
+				Sequence: common.GetCoinSequenceUnitMax(l.c, coin),
 			}
 
 			utxoAmount, err := strconv.ParseInt(utxo.Value, 10, 64)
@@ -145,6 +145,6 @@ func (b *btc) getUnspentTransactions(coin string, address string) ([]*cryptoPb.B
 	return result, totalAmount, nil
 }
 
-func NewBtcCoin(c config.Config, tw twallet.TWallet, bb blockbook.HttpBlockBook) Btc {
-	return &btc{c, tw, bb}
+func NewLtcCOin(c config.Config, tw twallet.TWallet, bb blockbook.HttpBlockBook) Ltc {
+	return &ltc{c, tw, bb}
 }

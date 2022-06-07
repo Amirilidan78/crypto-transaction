@@ -30,6 +30,8 @@ func (t *crypto) getBlockchain(blockchain string) coinConfig.Blockchain {
 		return blockchains.NewEthereumBlockchain(t.c, t.tw, t.bb)
 	case "TRON":
 		return blockchains.NewTronBlockchain(t.c, t.tw, t.tg)
+	case "LITECOIN":
+		return blockchains.NewLiteCoinBlockchain(t.c, t.tw, t.bb)
 	default:
 		panic("Blockchain is not implemented")
 	}
@@ -44,6 +46,8 @@ func (t *crypto) getCoin(blockchain string, coin string) coinConfig.Coin {
 		return coins.NewEthCoin(t.c, t.tw, t.bb)
 	case "TRX":
 		return coins.NewTrxCoin(t.c, t.tw, t.tg)
+	case "LTC":
+		return coins.NewLtcCOin(t.c, t.tw, t.bb)
 	default:
 	}
 

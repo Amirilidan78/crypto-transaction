@@ -18,6 +18,17 @@ simple crypto transaction repository for creating and submitting crypto transact
 - BTC
 - ETH
 - TRX
+- BNB
+-  USDT (ERC20)
+-  USDC (ERC20)
+-  TUSD (ERC20)
+-  BUSD (ERC20)
+-  WBTC (ERC20)
+-  DAI (ERC20)
+-  SHIBA (ERC20)
+-  LINK (ERC20)
+-  UNI (ERC20)
+-  SAND (ERC20)
 
 I am using trezor public nodes for btc and eth check `/config/config.yml` `coins.btc.node`
 

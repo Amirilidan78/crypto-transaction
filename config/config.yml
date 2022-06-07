@@ -21,6 +21,40 @@ coins :
     node : https://eth1.trezor.io
     subAmount : 18
     fee : 10
+    tokens :
+      BNB :
+        contract : 0xB8c77482e45F1F44dE1745F52C74426C631bDD52
+        subAmount : 18
+      USDT :
+        contract : 0xdAC17F958D2ee523a2206206994597C13D831ec7
+        subAmount : 8
+      USDC :
+        contract : 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48
+        subAmount : 6
+      TUSD :
+        contract : 0x0000000000085d4780B73119b644AE5ecd22b376
+        subAmount : 18
+      BUSD :
+        contract : 0x4Fabb145d64652a948d72533023f6E7A623C7C53
+        subAmount : 18
+      WBTC :
+        contract : 0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599
+        subAmount : 8
+      DAI :
+        contract : 0x6B175474E89094C44Da98b954EedeAC495271d0F
+        subAmount : 18
+      SHIBA :
+        contract : 0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE
+        subAmount : 18
+      LINK :
+        contract : 0x514910771AF9Ca656af840dff83E8264EcF986CA
+        subAmount : 18
+      UNI :
+        contract : 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984
+        subAmount : 18
+      SAND :
+        contract : 0x3845badAde8e6dFF049820680d1F14bD3903a5d0
+        subAmount : 18
 
   trx :
     node : https://api.shasta.trongrid.io

@@ -12,10 +12,8 @@ import (
 	"strconv"
 )
 
-const BTCCoinString = "BTC"
-
 type Btc interface {
-	CreateTransaction(amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error)
+	CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error)
 }
 
 type btc struct {
@@ -24,11 +22,11 @@ type btc struct {
 	bb blockbook.HttpBlockBook
 }
 
-func (b *btc) CreateTransaction(amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
+func (b *btc) CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
 
-	byteFee := common.GetCoinFee(b.c, BTCCoinString)
+	byteFee := common.GetCoinFee(b.c, coin)
 
-	satoshiAmount, errAmount := b.getAmountInSatoshi(amount)
+	satoshiAmount, errAmount := b.getAmountInSatoshi(coin, amount)
 
 	if errAmount != nil {
 		return nil, errAmount
@@ -40,7 +38,7 @@ func (b *btc) CreateTransaction(amount string, fromAddress string, toAddress str
 		return nil, errPrivateKey
 	}
 
-	utxos, totalUTXOsAmount, utxoErr := b.getUnspentTransactions(fromAddress)
+	utxos, totalUTXOsAmount, utxoErr := b.getUnspentTransactions(coin, fromAddress)
 
 	if utxoErr != nil {
 		return nil, utxoErr
@@ -51,7 +49,7 @@ func (b *btc) CreateTransaction(amount string, fromAddress string, toAddress str
 	}
 
 	si := &cryptoPb.BtcSigningInput{
-		HashType:      common.GetCoinHashType(b.c, BTCCoinString),
+		HashType:      common.GetCoinHashType(b.c, coin),
 		Amount:        satoshiAmount,
 		ByteFee:       byteFee,
 		ToAddress:     toAddress,
@@ -66,7 +64,7 @@ func (b *btc) CreateTransaction(amount string, fromAddress string, toAddress str
 	return si, nil
 }
 
-func (b *btc) getAmountInSatoshi(amount string) (int64, error) {
+func (b *btc) getAmountInSatoshi(coin string, amount string) (int64, error) {
 
 	btcAmount, err := strconv.ParseFloat(amount, 64)
 
@@ -74,7 +72,7 @@ func (b *btc) getAmountInSatoshi(amount string) (int64, error) {
 		return 0, err
 	}
 
-	satoshiAmount := btcAmount * math.Pow10(int(common.GetCoinFee(b.c, BTCCoinString)))
+	satoshiAmount := btcAmount * math.Pow10(int(common.GetCoinFee(b.c, coin)))
 
 	return int64(satoshiAmount), nil
 }
@@ -99,19 +97,19 @@ func (b *btc) convertPrivateKeyToHexStringArray(privateKey string) ([][]byte, er
 	return hxPrivateKeysArr, nil
 }
 
-func (b *btc) getUnspentTransactions(address string) ([]*cryptoPb.BtcUnspentTransaction, int64, error) {
+func (b *btc) getUnspentTransactions(coin string, address string) ([]*cryptoPb.BtcUnspentTransaction, int64, error) {
 
 	var result []*cryptoPb.BtcUnspentTransaction
 	var totalAmount int64
 
-	utxos, err := b.bb.GetAddressUTXO(BTCCoinString, address)
+	utxos, err := b.bb.GetAddressUTXO(coin, address)
 
 	if err != nil {
 		return result, totalAmount, err
 	}
 
 	for _, utxo := range utxos {
-		if utxo.Confirmations >= common.GetCoinUTXOMinConfirmation(b.c, BTCCoinString) {
+		if utxo.Confirmations >= common.GetCoinUTXOMinConfirmation(b.c, coin) {
 
 			utxId := utxo.Txid
 			utxIdHex, err := common.StringToHex(utxId)
@@ -123,7 +121,7 @@ func (b *btc) getUnspentTransactions(address string) ([]*cryptoPb.BtcUnspentTran
 			utxoOutPoit := cryptoPb.BtcOutPoint{
 				Hash:     utxIdReversed,
 				Index:    utxo.Vout,
-				Sequence: common.GetCoinSequenceUnitMax(b.c, BTCCoinString),
+				Sequence: common.GetCoinSequenceUnitMax(b.c, coin),
 			}
 
 			utxoAmount, err := strconv.ParseInt(utxo.Value, 10, 64)

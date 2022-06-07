@@ -14,10 +14,8 @@ import (
 	"time"
 )
 
-const CoinString = "TRX"
-
 type Trx interface {
-	CreateTransaction(amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error)
+	CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error)
 }
 
 type trx struct {
@@ -26,11 +24,11 @@ type trx struct {
 	tg trongrid.TronGrid
 }
 
-func (t *trx) CreateTransaction(amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
+func (t *trx) CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
 
-	fee := t.calculateTransactionFeeLimit()
+	fee := t.calculateTransactionFeeLimit(coin)
 
-	sunAmount := t.getAmountInSun(amount)
+	sunAmount := t.getAmountInSun(coin, amount)
 
 	hexedPrivateKey, errPrivateKey := t.convertPrivateKeyToHexString(addressPrivateKey)
 
@@ -86,7 +84,7 @@ func NewTrxCoin(c config.Config, tw twallet.TWallet, tg trongrid.TronGrid) Trx {
 	return &trx{c, tw, tg}
 }
 
-func (t *trx) getAmountInSun(amount string) int64 {
+func (t *trx) getAmountInSun(coin string, amount string) int64 {
 
 	macroAmount, err := strconv.ParseFloat(amount, 64)
 
@@ -94,13 +92,13 @@ func (t *trx) getAmountInSun(amount string) int64 {
 		log.Fatal(err)
 	}
 
-	microAmount := macroAmount * math.Pow10(common.GetCoinSubAmount(t.c, CoinString))
+	microAmount := macroAmount * math.Pow10(common.GetCoinSubAmount(t.c, coin))
 
 	return int64(microAmount)
 }
 
-func (t *trx) calculateTransactionFeeLimit() int64 {
-	return common.GetCoinFee(t.c, CoinString)
+func (t *trx) calculateTransactionFeeLimit(coin string) int64 {
+	return common.GetCoinFee(t.c, coin)
 }
 
 func (t *trx) convertPrivateKeyToHexString(privateKey string) ([]byte, error) {

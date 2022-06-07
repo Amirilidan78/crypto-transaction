@@ -43,6 +43,8 @@ func (t *crypto) getCoin(coin string) coinConfig.Coin {
 		return coins.NewEthCoin(t.c, t.tw, t.bb)
 	case "TRX":
 		return coins.NewTrxCoin(t.c, t.tw, t.tg)
+	case "USDT.ERC20":
+		return coins.NewEthErc20Coin(t.c, t.tw, t.bb)
 	default:
 		panic("Coin is not implemented")
 	}
@@ -50,11 +52,13 @@ func (t *crypto) getCoin(coin string) coinConfig.Coin {
 
 func (t *crypto) CreateTransaction(blockchainName string, coinName string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (string, error) {
 
+	coinName = strings.ToUpper(coinName)
+
 	blockchain := t.getBlockchain(blockchainName)
 	coin := t.getCoin(coinName)
 
 	// tx hash
-	tx, txErr := coin.CreateTransaction(amount, fromAddress, toAddress, addressPrivateKey)
+	tx, txErr := coin.CreateTransaction(coinName, amount, fromAddress, toAddress, addressPrivateKey)
 
 	if txErr != nil {
 		return "", txErr

@@ -13,28 +13,29 @@ import (
 	"strconv"
 )
 
-const ChainId = "01"
-const GasLimit = 21000
+const Erc20Blockchain = "ETH"
+const ETHErc20ChainId = "01"
+const ETHErc20GasLimit = 21000
 
-type Eth interface {
+type EthErc20 interface {
 	CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error)
 }
 
-type eth struct {
+type ethErc20 struct {
 	c  config.Config
 	tw twallet.TWallet
 	bb blockbook.HttpBlockBook
 }
 
-func (e *eth) CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
+func (e *ethErc20) CreateTransaction(coin string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (proto.Message, error) {
 
-	fee := strconv.FormatInt(common.GetCoinFee(e.c, coin), 10)
+	fee := strconv.FormatInt(common.GetCoinFee(e.c, Erc20Blockchain), 10)
 
-	_, _, gasPrice, gasLimit, errGasPrice := e.getRawGasPriceAndLimitFromConfig(coin, fee)
+	_, _, gasPrice, gasLimit, errGasPrice := e.getRawGasPriceAndLimitFromConfig(fee)
 
 	if errGasPrice != nil {
 
-		_, _, gasPrice, gasLimit, errGasPrice = e.getRawGasPriceAndLimitFromBlockchain(coin)
+		_, _, gasPrice, gasLimit, errGasPrice = e.getRawGasPriceAndLimitFromBlockchain()
 
 		if errGasPrice != nil {
 			return nil, errGasPrice
@@ -66,21 +67,21 @@ func (e *eth) CreateTransaction(coin string, amount string, fromAddress string, 
 	}
 
 	// converting ethErc20 to wei
-	weiAmount, errWeiAmount := e.getAmountInWei(coin, amount)
+	subAmount, errSubAmount := e.getSubAmount(coin, amount)
 
-	if errWeiAmount != nil {
-		return nil, errWeiAmount
+	if errSubAmount != nil {
+		return nil, errSubAmount
 	}
 
 	// converting wei to byte
-	hexedAmount, errAmount := common.StringToHex(weiAmount)
+	hexedAmount, errAmount := common.StringToHex(subAmount)
 
 	if errAmount != nil {
 		return nil, errAmount
 	}
 
 	// getting address nonce
-	nonce, errNonce := e.getNonce(coin, fromAddress)
+	nonce, errNonce := e.getNonce(fromAddress)
 
 	if errNonce != nil {
 		return nil, errNonce
@@ -93,30 +94,37 @@ func (e *eth) CreateTransaction(coin string, amount string, fromAddress string, 
 		return nil, errHexNonce
 	}
 
-	// creating eth transfer proto
-	ethTransaction := &cryptoPb.EthTransaction{}
+	// getting contract address for token
+	contractAddress, errContract := e.getErc20ContractAddress(coin)
 
-	ethTransactionTransfer := &cryptoPb.EthTransaction_Transfer{
-		Amount: hexedAmount,
-		Data:   []byte(""),
+	if errContract != nil {
+		return nil, errContract
 	}
 
-	ethTransactionTransfer_ := &cryptoPb.EthTransaction_Transfer_{Transfer: ethTransactionTransfer}
-
-	ethTransaction.TransactionOneof = ethTransactionTransfer_
-
-	hexedChainId, errHexChainId := common.StringToHex(ChainId)
+	// getting chain id
+	hexedChainId, errHexChainId := common.StringToHex(ETHErc20ChainId)
 
 	if errHexChainId != nil {
 		return nil, errHexChainId
 	}
+
+	// creating Eth transfer proto
+	ethTransaction := &cryptoPb.EthTransaction{}
+
+	// creating ethErc20 transfer proto
+	ethTransactionErc20Transfer := &cryptoPb.EthTransaction_ERC20Transfer{
+		To:     toAddress,
+		Amount: hexedAmount,
+	}
+
+	ethTransaction.TransactionOneof = &cryptoPb.EthTransaction_Erc20Transfer{Erc20Transfer: ethTransactionErc20Transfer}
 
 	si := &cryptoPb.EthSigningInput{
 		ChainId:     hexedChainId,
 		Nonce:       hexedNonce,
 		GasPrice:    hexedGasPrice,
 		GasLimit:    hexedGasLimit,
-		ToAddress:   toAddress,
+		ToAddress:   contractAddress,
 		PrivateKey:  hexedPrivateKey,
 		Transaction: ethTransaction,
 	}
@@ -124,17 +132,17 @@ func (e *eth) CreateTransaction(coin string, amount string, fromAddress string, 
 	return si, nil
 }
 
-func NewEthCoin(c config.Config, tw twallet.TWallet, bb blockbook.HttpBlockBook) Eth {
-	return &eth{c, tw, bb}
+func NewEthErc20Coin(c config.Config, tw twallet.TWallet, bb blockbook.HttpBlockBook) EthErc20 {
+	return &ethErc20{c, tw, bb}
 }
 
-func (e *eth) getAmountInWei(coin string, amount string) (string, error) {
+func (e *ethErc20) getSubAmount(coin string, amount string) (string, error) {
 	hex := ""
 	floatAmount, err := strconv.ParseFloat(amount, 64)
 	if err != nil {
 		return hex, err
 	}
-	floatWei := floatAmount * math.Pow10(common.GetCoinSubAmount(e.c, coin))
+	floatWei := floatAmount * math.Pow10(common.GetTokenSubAmount(e.c, Erc20Blockchain, coin))
 	strWei := strconv.FormatFloat(floatWei, 'f', 0, 64)
 	bi, assigned := new(big.Int).SetString(strWei, 10)
 	if !assigned {
@@ -155,11 +163,11 @@ func (e *eth) getAmountInWei(coin string, amount string) (string, error) {
 	return hex, nil
 }
 
-func (e *eth) getNonce(coin string, address string) (string, error) {
+func (e *ethErc20) getNonce(address string) (string, error) {
 
 	hexNonce := ""
 
-	resp, err := e.bb.GetAddress(coin, address)
+	resp, err := e.bb.GetAddress(Erc20Blockchain, address)
 
 	if err != nil {
 		return "", err
@@ -180,35 +188,35 @@ func (e *eth) getNonce(coin string, address string) (string, error) {
 	return hexNonce, nil
 }
 
-func (e *eth) getRawGasPriceAndLimitFromBlockchain(coin string) (int64, int64, int64, int64, error) {
+func (e *ethErc20) getRawGasPriceAndLimitFromBlockchain() (int64, int64, int64, int64, error) {
 
-	minGasPrice, maxGasPrice, avgGasPrice, err := e.estimateGasPriceFromLastBlock(coin)
+	minGasPrice, maxGasPrice, avgGasPrice, err := e.estimateGasPriceFromLastBlock()
 
 	if err != nil {
 		return 0, 0, 0, 0, err
 	}
 
-	return minGasPrice, maxGasPrice, avgGasPrice, int64(GasLimit), nil
+	return minGasPrice, maxGasPrice, avgGasPrice, int64(ETHErc20GasLimit), nil
 }
 
-func (e *eth) getRawGasPriceAndLimitFromConfig(coin string, fee string) (int64, int64, int64, int64, error) {
+func (e *ethErc20) getRawGasPriceAndLimitFromConfig(fee string) (int64, int64, int64, int64, error) {
 
 	feeFloat, err := strconv.ParseFloat(fee, 64)
 
-	weiAmountOfFee := feeFloat * math.Pow10(common.GetCoinSubAmount(e.c, coin))
+	subAmountOfFee := feeFloat * math.Pow10(common.GetCoinSubAmount(e.c, Erc20Blockchain))
 
 	if err != nil {
 		return 0, 0, 0, 0, err
 	}
 
-	avgGasPrice := weiAmountOfFee / GasLimit
+	avgGasPrice := subAmountOfFee / ETHErc20GasLimit
 
-	return 0, 0, int64(avgGasPrice), GasLimit, err
+	return 0, 0, int64(avgGasPrice), ETHErc20GasLimit, err
 }
 
-func (e *eth) estimateGasPriceFromLastBlock(coin string) (int64, int64, int64, error) {
+func (e *ethErc20) estimateGasPriceFromLastBlock() (int64, int64, int64, error) {
 
-	resp, errStatus := e.bb.GetStatus(coin)
+	resp, errStatus := e.bb.GetStatus(Erc20Blockchain)
 
 	if errStatus != nil {
 		return 0, 0, 0, errStatus
@@ -216,7 +224,7 @@ func (e *eth) estimateGasPriceFromLastBlock(coin string) (int64, int64, int64, e
 
 	bestBlockHash := resp.Backend.BestBlockHash
 
-	lastBlock, err := e.bb.GetBlock(coin, bestBlockHash)
+	lastBlock, err := e.bb.GetBlock(Erc20Blockchain, bestBlockHash)
 	if err != nil {
 		return 0, 0, 0, err
 	}
@@ -245,4 +253,15 @@ func (e *eth) estimateGasPriceFromLastBlock(coin string) (int64, int64, int64, e
 	avgGasPrice := sumGasPrice / lastBlock.TxCount
 
 	return minGasPrice, maxGasPrice, avgGasPrice, nil
+}
+
+func (e *ethErc20) getErc20ContractAddress(coin string) (string, error) {
+
+	contractAddress := common.GetCoinContractAddress(e.c, coin)
+
+	if contractAddress == "" {
+		return "", errors.New("contract address not found")
+	}
+
+	return contractAddress, nil
 }

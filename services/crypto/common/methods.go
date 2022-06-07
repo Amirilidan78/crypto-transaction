@@ -3,6 +3,7 @@ package common
 import (
 	"crypto-transaction/config"
 	"encoding/hex"
+	"strings"
 )
 
 func StringToHex(str string) ([]byte, error) {
@@ -31,6 +32,10 @@ func GetCoinSubAmount(c config.Config, coin string) int {
 	return c.GetInt("coins." + coin + ".subAmount")
 }
 
+func GetTokenSubAmount(c config.Config, blockchain string, coin string) int {
+	return c.GetInt("coins." + blockchain + "tokens." + coin + ".subAmount")
+}
+
 func GetCoinHashType(c config.Config, coin string) uint32 {
 	return uint32(c.GetInt("coins." + coin + ".hashType"))
 }
@@ -45,4 +50,8 @@ func GetCoinFee(c config.Config, coin string) int64 {
 
 func GetCoinSequenceUnitMax(c config.Config, coin string) uint32 {
 	return uint32(c.GetInt("coins." + coin + ".sequenceUnitMax"))
+}
+
+func GetCoinContractAddress(c config.Config, coin string) string {
+	return c.GetString("coins." + coin + ".tokens." + strings.ToUpper(coin))
 }

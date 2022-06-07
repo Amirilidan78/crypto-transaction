@@ -23,8 +23,10 @@ I am using trezor public nodes for btc and eth check `/config/config.yml` `coins
 
 and using shasta public api for trx `/config/config.yml` `coins.trx.node`
 
+To add more token add token `name` ,`subAmount` and `contract address` in `/config/config.yml` `coins.eth.tokens`
+
 ### TODOS
-- add support for `ERC20` and `TRC20` tokens 
+- add support for `TRC20` tokens 
 
 ### Example 
 ```
@@ -40,9 +42,9 @@ tg := trongrid.NewTronGrid(c, hc)
 cryptoService := crypto.NewCryptoService(c, tw, bb, tg)
 
 // generate and submit transaction 
-txId, err := cryptoService.CreateTransaction("TRON" ,"TRX" , "10", "TM1KhZrrwCXK9i5BY2JhuGpghp9SDn9EMR", "TLtqH1B8RogdFPf6ehNQuEDyc7XuJb1ug5", "7e9e3da4c22953f7be47c0131df77ba497fdb0ad3c141739adda8908faff8e7e")
+txId, err := cryptoService.CreateTransaction("TRON" ,"TRX" , "10", "TM1KhZrrwCXK9i5BY2JhuGpghp9SDn9EMR", "TLtqH1B8RogdFPf6ehNQuEDyc7XuJb1ug5", "privateKeyhere")
 
-fmt.Println(txId)  // nil 
-fmt.Println(err) // nil 
+// token example  
+txId, err := cryptoService.CreateTransaction("ETHEREUM" ,"USDT" , "10", "0x7fca062d4c1f7118b6e34fad8a95ec92e1753a4f", "0xf3e36ad56aa85abdacc18c02d19509ae4f7d5899", "privateKeyhere")
 
 ```

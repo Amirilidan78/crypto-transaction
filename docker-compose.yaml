@@ -16,7 +16,3 @@ services:
       bash -c "go build -o test ./app/test.go && ./test"
     dns:
       - 8.8.8.8
-
-volumes:
-  db:
-    driver : local

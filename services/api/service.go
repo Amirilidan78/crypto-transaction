@@ -3,7 +3,7 @@ package api
 import (
 	"crypto-transaction/config"
 	"crypto-transaction/pkg/httpServer"
-	"crypto-transaction/services/coins"
+	"crypto-transaction/services/crypto"
 	"fmt"
 )
 
@@ -15,7 +15,7 @@ type Api interface {
 
 type api struct {
 	c config.Config
-	s coins.Transaction
+	s crypto.Crypto
 }
 
 func (a *api) Serve() {
@@ -54,6 +54,6 @@ func (a *api) registerRoutes(server httpServer.HttpServer) {
 	fmt.Println("----- Registered routes -----")
 }
 
-func NewApiService(c config.Config, s coins.Transaction) Api {
+func NewApiService(c config.Config, s crypto.Crypto) Api {
 	return &api{c, s}
 }

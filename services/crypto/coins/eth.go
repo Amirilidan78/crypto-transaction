@@ -65,7 +65,7 @@ func (e *eth) CreateTransaction(coin string, amount string, fromAddress string, 
 		return nil, errPrivateKey
 	}
 
-	// converting ethErc20 to wei
+	// converting trxTrc20 to wei
 	weiAmount, errWeiAmount := e.getAmountInWei(coin, amount)
 
 	if errWeiAmount != nil {

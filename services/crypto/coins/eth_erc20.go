@@ -66,7 +66,7 @@ func (e *ethErc20) CreateTransaction(coin string, amount string, fromAddress str
 		return nil, errPrivateKey
 	}
 
-	// converting ethErc20 to wei
+	// converting trxTrc20 to wei
 	subAmount, errSubAmount := e.getSubAmount(coin, amount)
 
 	if errSubAmount != nil {
@@ -111,7 +111,7 @@ func (e *ethErc20) CreateTransaction(coin string, amount string, fromAddress str
 	// creating Eth transfer proto
 	ethTransaction := &cryptoPb.EthTransaction{}
 
-	// creating ethErc20 transfer proto
+	// creating trxTrc20 transfer proto
 	ethTransactionErc20Transfer := &cryptoPb.EthTransaction_ERC20Transfer{
 		To:     toAddress,
 		Amount: hexedAmount,
@@ -257,7 +257,7 @@ func (e *ethErc20) estimateGasPriceFromLastBlock() (int64, int64, int64, error) 
 
 func (e *ethErc20) getErc20ContractAddress(coin string) (string, error) {
 
-	contractAddress := common.GetCoinContractAddress(e.c, coin)
+	contractAddress := common.GetCoinContractAddress(e.c, Erc20Blockchain, coin)
 
 	if contractAddress == "" {
 		return "", errors.New("contract address not found")

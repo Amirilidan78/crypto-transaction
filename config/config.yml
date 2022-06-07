@@ -60,3 +60,25 @@ coins :
     node : https://api.shasta.trongrid.io
     subAmount : 6
     fee : 1000000
+    tokens:
+      USDT:
+        contract: TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t
+        subAmount: 	6
+      TUSD:
+        contract: TUpMhErZL2fhh4sVNULAbNKLokS4GjC1F4
+        subAmount: 	18
+      USDC:
+        contract: TEkxiTehnzSmSe2XqrBj4w32RUN966rdz8
+        subAmount: 	6
+      USDD:
+        contract: TPYmHEhy5n8TCEfYGqW2rPxsghSfzghPDn
+        subAmount: 	18
+      USDJ:
+        contract: TMwFHYXLJaRUPeW6421aqXL4ZEzPRFGkGT
+        subAmount: 	18
+      JST:
+        contract: TCFLL5dx5ZJdKnWuesXxi1VPwjLVmWZZy9
+        subAmount: 	18
+      BTT:
+        contract: TAFjULxiVgT4qWk6UZwjqwZXTSaGaqnVp4
+        subAmount: 	18

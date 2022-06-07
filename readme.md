@@ -1,45 +1,53 @@
 # Crypto transaction 
-simple crypto transaction repository for creating and submitting crypto transactions 
+Simple crypto transaction repository for creating and submitting crypto transactions 
+
 
 ### Packages and services 
 - Golang https://go.dev/
 - Trust wallet core https://developer.trustwallet.com/wallet-core
 
-### Quick start 
-- `docker-compose up -d `
-- `docker exec -it api-crypto-transaction-container go run ./app/test.go`
+
+### Setup
+- `docker-compose up -d`
+
 
 ### Supported blockchains
 - BTC
 - ETH
 - TRX
 
+
 ### Supported coins
 - BTC
 - ETH
 - TRX
-- BNB
--  USDT (ERC20)
--  USDC (ERC20)
--  TUSD (ERC20)
--  BUSD (ERC20)
--  WBTC (ERC20)
--  DAI (ERC20)
--  SHIBA (ERC20)
--  LINK (ERC20)
--  UNI (ERC20)
--  SAND (ERC20)
+- BNB (ERC20)
+- USDT (ERC20)
+- USDC (ERC20)
+- TUSD (ERC20)
+- BUSD (ERC20)
+- WBTC (ERC20)
+- DAI (ERC20)
+- SHIBA (ERC20)
+- LINK (ERC20)
+- UNI (ERC20)
+- SAND (ERC20)
+- USDT (TRC20)
+- TUSD (TRC20)
+- USDC (TRC20)
+- USDD (TRC20)
+- USDJ (TRC20)
+- JST (TRC20)
+- BTT (TRC20)
 
-I am using trezor public nodes for btc and eth check `/config/config.yml` `coins.btc.node`
+### Add more token ERC20 and TRC20 token
 
-and using shasta public api for trx `/config/config.yml` `coins.trx.node`
+Erc20 token : add token `name` ,`subAmount` and `contract address` in `/config/config.yml` `coins.eth.tokens`
 
-To add more token add token `name` ,`subAmount` and `contract address` in `/config/config.yml` `coins.eth.tokens`
+Trc20 token : add token `name` ,`subAmount` and `contract address` in `/config/config.yml` `coins.trx.tokens`
 
-### TODOS
-- add support for `TRC20` tokens 
 
-### Example 
+### Usage 
 ```
 
 // create dependencies 
@@ -59,3 +67,11 @@ txId, err := cryptoService.CreateTransaction("TRON" ,"TRX" , "10", "TM1KhZrrwCXK
 txId, err := cryptoService.CreateTransaction("ETHEREUM" ,"USDT" , "10", "0x7fca062d4c1f7118b6e34fad8a95ec92e1753a4f", "0xf3e36ad56aa85abdacc18c02d19509ae4f7d5899", "privateKeyhere")
 
 ```
+
+### Attention 
+
+this project is for learning purpose only
+
+this project is using trezor public nodes for btc and eth, check `/config/config.yml` `coins.btc.node`
+
+and using shasta public api for trx, check `/config/config.yml` `coins.trx.node`

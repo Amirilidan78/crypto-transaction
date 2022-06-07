@@ -52,6 +52,6 @@ func GetCoinSequenceUnitMax(c config.Config, coin string) uint32 {
 	return uint32(c.GetInt("coins." + coin + ".sequenceUnitMax"))
 }
 
-func GetCoinContractAddress(c config.Config, coin string) string {
-	return c.GetString("coins." + coin + ".tokens." + strings.ToUpper(coin))
+func GetCoinContractAddress(c config.Config, blockchain string, coin string) string {
+	return c.GetString("coins." + strings.ToLower(blockchain) + ".tokens." + strings.ToUpper(coin))
 }

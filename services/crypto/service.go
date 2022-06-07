@@ -35,7 +35,8 @@ func (t *crypto) getBlockchain(blockchain string) coinConfig.Blockchain {
 	}
 }
 
-func (t *crypto) getCoin(coin string) coinConfig.Coin {
+func (t *crypto) getCoin(blockchain string, coin string) coinConfig.Coin {
+
 	switch strings.ToUpper(coin) {
 	case "BTC":
 		return coins.NewBtcCoin(t.c, t.tw, t.bb)
@@ -43,19 +44,37 @@ func (t *crypto) getCoin(coin string) coinConfig.Coin {
 		return coins.NewEthCoin(t.c, t.tw, t.bb)
 	case "TRX":
 		return coins.NewTrxCoin(t.c, t.tw, t.tg)
-	case "USDT.ERC20":
-		return coins.NewEthErc20Coin(t.c, t.tw, t.bb)
 	default:
-		panic("Coin is not implemented")
 	}
+
+	if blockchain == "ETHEREUM" {
+		tokens := t.c.GetMap("coins.eth.tokens")
+		for name, _ := range tokens {
+			if name == coin {
+				return coins.NewEthErc20Coin(t.c, t.tw, t.bb)
+			}
+		}
+	}
+
+	if blockchain == "TRON" {
+		tokens := t.c.GetMap("coins.trx.tokens")
+		for name, _ := range tokens {
+			if name == coin {
+				return coins.NewTrxTrc20Coin(t.c, t.tw, t.tg)
+			}
+		}
+	}
+
+	panic("Coin is not implemented")
 }
 
 func (t *crypto) CreateTransaction(blockchainName string, coinName string, amount string, fromAddress string, toAddress string, addressPrivateKey string) (string, error) {
 
 	coinName = strings.ToUpper(coinName)
+	blockchainName = strings.ToUpper(blockchainName)
 
 	blockchain := t.getBlockchain(blockchainName)
-	coin := t.getCoin(coinName)
+	coin := t.getCoin(blockchainName, coinName)
 
 	// tx hash
 	tx, txErr := coin.CreateTransaction(coinName, amount, fromAddress, toAddress, addressPrivateKey)
